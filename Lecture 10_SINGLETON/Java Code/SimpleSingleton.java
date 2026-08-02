@@ -15,7 +15,11 @@ public class SimpleSingleton {
     public static void main(String[] args) {
         SimpleSingleton s1 = SimpleSingleton.getInstance();
         SimpleSingleton s2 = SimpleSingleton.getInstance();
-
         System.out.println(s1 == s2);
     }
 }
+
+// ❌ Not thread-safe.
+// ❌ Can be broken using Reflection.
+// ❌ Can be broken using Serialization.
+// ❌ Can be broken using Cloning.
