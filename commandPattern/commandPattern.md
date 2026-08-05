@@ -460,7 +460,7 @@ Receiver (Light/Fan)
 
 ## A common interview comparison of the behavioral patterns you've covered is:
 
-** 
+
 | Pattern                     | Purpose                            | Communication Style          |
 | --------------------------- | ---------------------------------- | ---------------------------- |
 | **Strategy**                | Select one algorithm               | Context → Strategy           |
@@ -469,4 +469,3 @@ Receiver (Light/Fan)
 | **Observer**                | Notify subscribers of changes      | Subject → Many Observers     |
 | **Command**                 | Encapsulate a request as an object | Invoker → Command → Receiver |
 
-**
