@@ -1,461 +1,536 @@
-# Command Design Pattern
+# Singleton Design Pattern
 
-The **Command Design Pattern** is a **behavioral design pattern** that encapsulates a request as an object. This allows you to parameterize objects with requests, queue or log requests, and support operations like **undo** and **redo**.
+The **Singleton Design Pattern** is a **creational design pattern** that ensures a class has **only one instance** throughout the application and provides a **global access point** to that instance.
 
 > **In simple words:**
-> The Command Pattern turns a request into an object, allowing the sender of the request to be completely decoupled from the object that performs the action.
+> The Singleton Pattern guarantees that only one object of a class is ever created, and everyone uses that same object.
 
 ---
 
-# Why use the Command Pattern?
+# Why use the Singleton Pattern?
 
-Imagine you're building a **Smart Home Remote Control**.
+Imagine you're building an application with a **Logger**.
 
-The remote can control different devices:
+Every part of the application wants to write logs.
 
-* Light
-* Fan
-* TV
+Without the Singleton Pattern, you might write:
 
-Without the Command Pattern, you might write:
+```java id="d2x8wq"
+class Logger {
 
-```java id="5ynp6k"
-class RemoteControl {
-
-    private Light light = new Light();
-    private Fan fan = new Fan();
-
-    public void pressButton(String device) {
-
-        if (device.equals("LIGHT")) {
-            light.turnOn();
-        } else if (device.equals("FAN")) {
-            fan.turnOn();
-        }
+    public void log(String message) {
+        System.out.println(message);
     }
 }
 ```
 
-## Problems
+Client Code:
 
-* Lots of `if-else` or `switch` statements.
-* Remote is tightly coupled to all devices.
-* Difficult to add new devices.
-* Cannot easily support undo, redo, or command history.
-* Violates the **Open/Closed Principle**.
-
----
-
-# Command Pattern Solution
-
-Instead of the remote directly controlling devices, every action is represented by a **Command** object.
-
-The remote simply executes commands without knowing what they do.
-
----
-
-# Step 1: Create the Command Interface
-
-```java id="9y0rj8"
-interface Command {
-    void execute();
-}
-```
-
----
-
-# Step 2: Create Receiver Classes
-
-## Light
-
-```java id="d54qzt"
-class Light {
-
-    public void turnOn() {
-        System.out.println("Light is ON");
-    }
-
-    public void turnOff() {
-        System.out.println("Light is OFF");
-    }
-}
-```
-
----
-
-## Fan
-
-```java id="wlrql0"
-class Fan {
-
-    public void turnOn() {
-        System.out.println("Fan is ON");
-    }
-
-    public void turnOff() {
-        System.out.println("Fan is OFF");
-    }
-}
-```
-
----
-
-# Step 3: Implement Concrete Commands
-
-## Light On Command
-
-```java id="6mpz4j"
-class LightOnCommand implements Command {
-
-    private Light light;
-
-    public LightOnCommand(Light light) {
-        this.light = light;
-    }
-
-    @Override
-    public void execute() {
-        light.turnOn();
-    }
-}
-```
-
----
-
-## Fan On Command
-
-```java id="s6vn9r"
-class FanOnCommand implements Command {
-
-    private Fan fan;
-
-    public FanOnCommand(Fan fan) {
-        this.fan = fan;
-    }
-
-    @Override
-    public void execute() {
-        fan.turnOn();
-    }
-}
-```
-
----
-
-# Step 4: Create the Invoker
-
-The invoker knows **when** to execute a command, but not **how** it works.
-
-```java id="j9lq2x"
-class RemoteControl {
-
-    private Command command;
-
-    public void setCommand(Command command) {
-        this.command = command;
-    }
-
-    public void pressButton() {
-        command.execute();
-    }
-}
-```
-
----
-
-# Step 5: Client Code
-
-```java id="w73nk6"
+```java id="2v0c5p"
 public class Main {
 
     public static void main(String[] args) {
 
-        Light light = new Light();
-        Fan fan = new Fan();
+        Logger logger1 = new Logger();
+        Logger logger2 = new Logger();
 
-        Command lightCommand = new LightOnCommand(light);
-        Command fanCommand = new FanOnCommand(fan);
+        System.out.println(logger1 == logger2);
 
-        RemoteControl remote = new RemoteControl();
-
-        remote.setCommand(lightCommand);
-        remote.pressButton();
-
-        remote.setCommand(fanCommand);
-        remote.pressButton();
+        logger1.log("Application Started");
     }
 }
 ```
 
 ### Output
 
-```text id="y5q82o"
-Light is ON
-Fan is ON
+```text id="9nxmju"
+false
+Application Started
 ```
+
+## Problems
+
+* Multiple logger objects are created.
+* Unnecessary memory usage.
+* Difficult to manage shared resources.
+* Different parts of the application may maintain inconsistent state.
+
+---
+
+# Singleton Pattern Solution
+
+Instead of allowing anyone to create objects using `new`, the class controls object creation itself.
+
+The class:
+
+* Makes its constructor **private**.
+* Creates only one instance.
+* Provides a public method to access that instance.
+
+---
+
+# Step 1: Create the Singleton Class
+
+```java id="d73n4m"
+class Logger {
+
+    private static Logger instance;
+
+    private Logger() {
+    }
+
+    public static Logger getInstance() {
+
+        if (instance == null) {
+            instance = new Logger();
+        }
+
+        return instance;
+    }
+
+    public void log(String message) {
+        System.out.println(message);
+    }
+}
+```
+
+---
+
+# Step 2: Client Code
+
+```java id="7cjlwm"
+public class Main {
+
+    public static void main(String[] args) {
+
+        Logger logger1 = Logger.getInstance();
+        Logger logger2 = Logger.getInstance();
+
+        System.out.println(logger1 == logger2);
+
+        logger1.log("Application Started");
+    }
+}
+```
+
+### Output
+
+```text id="e0kz6n"
+true
+Application Started
+```
+
+Only **one** `Logger` object exists.
+
+---
+
+# How Singleton Works
+
+```text id="g2m09x"
+Client
+   |
+   v
+Logger.getInstance()
+   |
+instance == null ?
+   |
+Yes -------------> Create Object
+ |
+No
+ |
+Return Existing Object
+```
+
+The first call creates the object. Every subsequent call returns the same object.
 
 ---
 
 # Class Diagram
 
-```text id="ev8brt"
-                Command
-              +-----------+
-              | execute() |
-              +-----------+
-                   ^
-                   |
-      -----------------------------
-      |                           |
-LightOnCommand             FanOnCommand
-      |                           |
-      v                           v
-    Light                       Fan
-
-             ^
-             |
-      RemoteControl
-      (Invoker)
-```
-
-The **RemoteControl** only executes commands. The actual work is done by the receiver classes (`Light`, `Fan`).
-
----
-
-# Command Flow
-
-```text id="7k9r5u"
-Client
-   |
-Creates Command
-   |
-   v
-Remote Control
-   |
-execute()
-   |
-   v
-Concrete Command
-   |
-Calls Receiver
-   |
-   v
-Light / Fan
+```text id="x5vylw"
+             +----------------------+
+             |      Logger          |
+             +----------------------+
+             | - instance : Logger  |
+             +----------------------+
+             | - Logger()           |
+             | + getInstance()      |
+             | + log()              |
+             +----------------------+
 ```
 
 ---
 
-# Real-World Example
+# Why is the Constructor Private?
 
-## Restaurant Ordering System
+If the constructor were public:
 
-When a customer places an order:
-
-* Waiter takes the order.
-* Chef prepares the food.
-* Kitchen equipment cooks it.
-
-The waiter doesn't cook the food.
-
-```text id="l9gm2g"
-Customer
-    |
-    v
-Waiter (Invoker)
-    |
-Order Command
-    |
-    v
-Chef (Receiver)
+```java id="x2g6zb"
+Logger logger = new Logger();
 ```
 
-The order acts as the **Command** object.
+Anyone could create multiple objects.
+
+Making the constructor **private** prevents object creation from outside the class.
+
+Only the class itself can create its instance.
 
 ---
 
-# Another Example: Text Editor
+# Different Ways to Implement Singleton
 
-A text editor supports operations like:
+## 1. Lazy Initialization
 
-* Copy
-* Paste
-* Cut
-* Undo
-* Redo
+The object is created only when it is first needed.
 
-Each operation can be represented as a command.
+```java id="v0h9p2"
+class Singleton {
 
-```text id="hzj54r"
-Editor
-   |
-CopyCommand
-PasteCommand
-CutCommand
-UndoCommand
-RedoCommand
-```
+    private static Singleton instance;
 
-Because commands are objects, they can be:
+    private Singleton() {}
 
-* Stored in history.
-* Undone.
-* Replayed.
-* Logged.
+    public static Singleton getInstance() {
 
----
+        if (instance == null) {
+            instance = new Singleton();
+        }
 
-# Supporting Undo
-
-The Command Pattern naturally supports undo.
-
-```java id="i0ykqv"
-interface Command {
-
-    void execute();
-
-    void undo();
-}
-```
-
-Example:
-
-```java id="jn77s2"
-class LightOnCommand implements Command {
-
-    private Light light;
-
-    public LightOnCommand(Light light) {
-        this.light = light;
-    }
-
-    public void execute() {
-        light.turnOn();
-    }
-
-    public void undo() {
-        light.turnOff();
+        return instance;
     }
 }
 ```
 
-The invoker can maintain a stack of executed commands to implement **Undo/Redo**.
+### Pros
+
+* Saves memory.
+* Object created only when required.
+
+### Cons
+
+* Not thread-safe.
+
+---
+
+## 2. Eager Initialization
+
+The object is created when the class is loaded.
+
+```java id="8e8xsi"
+class Singleton {
+
+    private static final Singleton INSTANCE = new Singleton();
+
+    private Singleton() {}
+
+    public static Singleton getInstance() {
+        return INSTANCE;
+    }
+}
+```
+
+### Pros
+
+* Simple.
+* Thread-safe because class loading is thread-safe.
+
+### Cons
+
+* Object created even if never used.
+
+---
+
+## 3. Thread-Safe Singleton
+
+```java id="m2jjfo"
+class Singleton {
+
+    private static Singleton instance;
+
+    private Singleton() {}
+
+    public static synchronized Singleton getInstance() {
+
+        if (instance == null) {
+            instance = new Singleton();
+        }
+
+        return instance;
+    }
+}
+```
+
+### Pros
+
+* Thread-safe.
+
+### Cons
+
+* Synchronization adds performance overhead.
+
+---
+
+## 4. Double-Checked Locking (Recommended)
+
+```java id="4g6dhn"
+class Singleton {
+
+    private static volatile Singleton instance;
+
+    private Singleton() {}
+
+    public static Singleton getInstance() {
+
+        if (instance == null) {
+
+            synchronized (Singleton.class) {
+
+                if (instance == null) {
+                    instance = new Singleton();
+                }
+            }
+        }
+
+        return instance;
+    }
+}
+```
+
+### Why `volatile`?
+
+Without `volatile`, one thread may see a partially initialized object because of instruction reordering.
+
+`volatile` prevents this and guarantees visibility across threads.
+
+### Pros
+
+* Thread-safe.
+* Better performance than synchronizing every call.
+* Recommended for lazy initialization in multithreaded applications.
+
+---
+
+## 5. Bill Pugh Singleton (Best Practice)
+
+Uses a static inner helper class.
+
+```java id="1wscji"
+class Singleton {
+
+    private Singleton() {}
+
+    private static class SingletonHelper {
+        private static final Singleton INSTANCE = new Singleton();
+    }
+
+    public static Singleton getInstance() {
+        return SingletonHelper.INSTANCE;
+    }
+}
+```
+
+### Why is it good?
+
+* Lazy initialization.
+* Thread-safe.
+* No synchronization overhead.
+* Relies on JVM class loading guarantees.
+
+This is one of the most commonly recommended implementations in Java.
+
+---
+
+## 6. Enum Singleton (Safest)
+
+```java id="icr0zw"
+enum Singleton {
+
+    INSTANCE;
+
+    public void display() {
+        System.out.println("Singleton Instance");
+    }
+}
+```
+
+Usage:
+
+```java id="pgtl78"
+public class Main {
+
+    public static void main(String[] args) {
+
+        Singleton.INSTANCE.display();
+    }
+}
+```
+
+### Pros
+
+* Thread-safe.
+* Protects against serialization issues.
+* Protects against reflection attacks.
+* Very simple.
+
+Joshua Bloch recommends this approach in **Effective Java**.
+
+---
+
+# Real-World Examples
+
+## Database Connection Manager
+
+Only one object manages database connections.
+
+```text id="rwgt0d"
+Application
+     |
+     v
+DatabaseConnectionManager (Singleton)
+     |
+     v
+Database
+```
+
+---
+
+## Configuration Manager
+
+Configuration is loaded once and shared across the application.
+
+```text id="8b6xlb"
+Application
+      |
+      v
+ConfigurationManager
+      |
+      +---- Reads config.properties once
+```
+
+---
+
+## Logger
+
+Every component writes logs using the same logger instance.
+
+```text id="1a4iy5"
+Service A
+      |
+Service B
+      |
+Service C
+      |
+      v
+Shared Logger
+```
 
 ---
 
 # Advantages
 
-* Removes large `if-else` or `switch` statements.
-* Decouples sender from receiver.
-* Easy to add new commands.
-* Supports undo, redo, logging, and queuing.
-* Follows the **Open/Closed Principle**.
+* Ensures only one instance exists.
+* Saves memory.
+* Provides a global access point.
+* Useful for managing shared resources.
+* Centralizes configuration and state.
 
 ---
 
 # Disadvantages
 
-* Increases the number of classes.
-* Can be overkill for very simple applications.
-* Managing command history for undo/redo adds complexity.
+* Introduces global state.
+* Difficult to unit test because of shared state.
+* Can become a bottleneck in concurrent applications.
+* Violates the **Single Responsibility Principle** if it manages too much.
+* Overuse can make code tightly coupled.
 
 ---
 
-# When to Use the Command Pattern
+# When to Use the Singleton Pattern
 
-Use the Command Pattern when:
+Use the Singleton Pattern when:
 
-* You want to decouple the sender from the receiver.
-* Requests should be represented as objects.
-* You need undo/redo functionality.
-* Commands should be queued, scheduled, or logged.
+* Exactly one instance of a class is required.
+* The instance needs to be shared across the application.
+* You need centralized management of a resource.
 
 ### Common Use Cases
 
-* GUI button actions
-* Smart home remote controls
-* Text editors
-* Transaction processing
-* Job scheduling
-* Macro recording
-* Queue-based task execution
-* Undo/Redo systems
+* Logger
+* Configuration Manager
+* Cache Manager
+* Database Connection Manager
+* Thread Pool Manager
+* Application Settings
+* Printer Spooler
+* Runtime Environment
 
 ---
 
-# Command vs Strategy Pattern
+# Singleton vs Factory Pattern
 
-| Strategy Pattern                       | Command Pattern                 |
-| -------------------------------------- | ------------------------------- |
-| Encapsulates an algorithm.             | Encapsulates a request/action.  |
-| Client chooses which algorithm to use. | Invoker executes a command.     |
-| Focuses on interchangeable algorithms. | Focuses on executable requests. |
-
----
-
-# Command vs Chain of Responsibility
-
-| Chain of Responsibility                      | Command Pattern                                   |
-| -------------------------------------------- | ------------------------------------------------- |
-| Request passes through multiple handlers.    | Request is wrapped into a command object.         |
-| One handler eventually processes it.         | Receiver executes the command directly.           |
-| Focuses on deciding who handles the request. | Focuses on representing the request as an object. |
+| Singleton Pattern                   | Factory Pattern                          |
+| ----------------------------------- | ---------------------------------------- |
+| Ensures one instance.               | Creates objects.                         |
+| Controls object count.              | Controls object creation.                |
+| Same object is returned every time. | May return different objects.            |
+| Focuses on uniqueness.              | Focuses on encapsulating creation logic. |
 
 ---
 
-# Command vs Observer
+# Singleton vs Prototype Pattern
 
-| Observer Pattern                     | Command Pattern                    |
-| ------------------------------------ | ---------------------------------- |
-| Subject notifies multiple observers. | Invoker executes one command.      |
-| Event-driven communication.          | Action-driven execution.           |
-| One event can notify many listeners. | One command represents one action. |
+| Singleton Pattern         | Prototype Pattern                   |
+| ------------------------- | ----------------------------------- |
+| Only one instance exists. | New objects are created by cloning. |
+| Shared object.            | Multiple independent copies.        |
 
 ---
 
 # Summary
 
-The **Command Design Pattern** encapsulates a request as an object.
+The **Singleton Design Pattern** ensures that only one instance of a class exists and provides a global access point to that instance.
 
-Instead of directly invoking operations on receivers, the **Invoker** executes a **Command**, which delegates the work to the appropriate **Receiver**.
-
-This decouples the sender from the receiver and enables advanced features such as **undo**, **redo**, **logging**, **queuing**, and **macro commands**.
+The class controls its own object creation by making the constructor private and exposing a static method that returns the single instance.
 
 ## Key Components
 
-| Component            | Responsibility                                             |
-| -------------------- | ---------------------------------------------------------- |
-| **Command**          | Declares the interface for executing a request.            |
-| **Concrete Command** | Implements the command and delegates work to the receiver. |
-| **Receiver**         | Performs the actual business logic.                        |
-| **Invoker**          | Stores and executes commands.                              |
-| **Client**           | Creates commands and associates them with receivers.       |
+| Component                | Responsibility                                            |
+| ------------------------ | --------------------------------------------------------- |
+| **Singleton Class**      | Maintains the single instance and provides global access. |
+| **Private Constructor**  | Prevents external object creation.                        |
+| **Static Instance**      | Stores the only object.                                   |
+| **Static getInstance()** | Returns the shared instance.                              |
+| **Client**               | Retrieves the singleton using `getInstance()`.            |
 
 ### Pattern Flow
 
-```text id="kldk1m"
+```text id="shq85h"
 Client
    |
-Creates Command
-   |
    v
-Invoker (Remote Control)
+Singleton.getInstance()
    |
-execute()
+instance exists?
    |
-   v
-Concrete Command
-   |
-Calls
-   |
-   v
-Receiver (Light/Fan)
++---------------------+
+|                     |
+No                    Yes
+|                     |
+Create Object         Return Existing Object
+        \             /
+         \           /
+          +---------+
+          |
+          v
+     Singleton Instance
 ```
 
 ---
 
 ## Key Takeaway
 
-> **Encapsulate a request as an object so that requests can be parameterized, queued, logged, and undone, while keeping the sender and receiver loosely coupled.**
+> **Ensure a class has only one instance and provide a global access point to it. In Java, the preferred implementations are the Bill Pugh Singleton for most cases and the Enum Singleton when maximum safety against serialization and reflection is required.**
 
 
 | Pattern                     | Category   | Primary Purpose                              |
