@@ -418,3 +418,12 @@ Each decorator enhances the object while preserving the same interface.
 ## Key Takeaway
 
 > **Use the Decorator Pattern to add responsibilities to objects dynamically without modifying their existing code. It provides a flexible alternative to subclassing by using object composition.**
+| Pattern       | Purpose                                      | Example                       |
+| ------------- | -------------------------------------------- | ----------------------------- |
+| **Adapter**   | Convert one interface into another           | Legacy API Integration        |
+| **Bridge**    | Separate abstraction from implementation     | Remote & TV                   |
+| **Composite** | Treat individual and group objects uniformly | File System                   |
+| **Decorator** | Add behavior dynamically                     | Coffee, Java I/O Streams      |
+| **Facade**    | Simplify a complex subsystem                 | Home Theater                  |
+| **Flyweight** | Share objects to reduce memory usage         | Text Editor Characters        |
+| **Proxy**     | Control access to an object                  | Virtual Proxy, Security Proxy |
