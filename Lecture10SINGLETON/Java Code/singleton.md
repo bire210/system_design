@@ -133,12 +133,10 @@ Client
 Logger.getInstance()
    |
 instance == null ?
-   |
-Yes -------------> Create Object
- |
-No
- |
-Return Existing Object
+                      |
+        No ---------------------------Yes 
+        |                               |
+ Return Existing Object              Create Object
 ```
 
 The first call creates the object. Every subsequent call returns the same object.
